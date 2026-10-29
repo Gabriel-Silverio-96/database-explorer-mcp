@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "database-explorer-mcp"
+version = "0.1.0"
+description = "A read-only PostgreSQL database explorer MCP server."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=2,<3",
+    "psycopg[binary]>=3.2,<4",
+    "python-dotenv>=1,<2",
+    "sqlglot>=26,<30",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["mcp", "postgresql", "database", "read-only", "ai"]
+
+[project.optional-dependencies]
+dev = [
+    "mcp[cli]>=2,<3",
+    "uv>=0.8,<1",
+    "build>=1,<2",
+    "twine>=6,<7",
+]
+
+[project.scripts]
+database-explorer-mcp = "database_explorer.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["database_explorer"]
