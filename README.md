@@ -20,27 +20,19 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env` and replace the example URL with the URL for your database and read-only user. Do not use administrator credentials. Git ignores this file.
+Create `.env` and add your PostgreSQL connection URL.
 
-## PostgreSQL permissions
-
-Create a dedicated user and grant access only to the required database, schema, and tables. For example, run the following as a PostgreSQL administrator in `psql` (adjust the names and password):
-
-```sql
-CREATE ROLE mcp_reader LOGIN PASSWORD 'replace-this-password';
-GRANT CONNECT ON DATABASE app_db TO mcp_reader;
-GRANT USAGE ON SCHEMA public TO mcp_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO mcp_reader;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO mcp_reader;
 ```
-
-`ALTER DEFAULT PRIVILEGES` applies to objects created by the user who ran the command. For production, grant `SELECT` explicitly only on approved tables and review access to sensitive data.
+DATABASE_URL=postgresql://mcp_reader:replace_me@localhost:5432/app_db
+```
 
 ## MCP tools
 
 - `list_tables()` lists tables and views accessible in the `public` schema.
 - `describe_table(table_name)` returns a table's columns, types, and nullability.
 - `execute_readonly_query(sql, limit=100)` accepts a read-only SQL query and returns up to 500 rows.
+
+Tool implementations live in `database_explorer/tools/`, grouped by responsibility. `server.py` registers them with the MCP server. Data access should be controlled through PostgreSQL permissions and, where needed, approved views or schemas.
 
 ## Run the MCP Inspector
 
@@ -50,4 +42,48 @@ With the virtual environment activated and `.env` configured, run:
 mcp dev server.py
 ```
 
-The Inspector starts the local server and lets you call its tools. To connect another MCP client, configure it to run the absolute path to the Python executable in `.venv/bin/python` and the absolute path to this `server.py`. The server loads `DATABASE_URL` from `.env`.
+The Inspector starts the local server and lets you call its tools. The server loads `DATABASE_URL` from `.env`.
+
+## Connect a local LLM client
+
+An LLM model does not connect to an MCP server by itself. The application or CLI you use with the model must support MCP, including local `stdio` servers. Keep this project on the same computer as that client. The client starts the server process when it needs the tools.
+
+Before configuring a client, complete the setup above and make sure `.env` contains a valid `DATABASE_URL`. Do not put the database URL or password in the MCP client configuration file.
+
+### Gemini CLI
+
+Gemini CLI reads MCP server definitions from `~/.gemini/settings.json`. Add a `mcpServers` entry, preserving any other settings already in that file. Replace `/absolute/path/to/database_explorer_mcp` with the full path to this project directory:
+
+```json
+{
+  "mcpServers": {
+    "database-explorer": {
+      "command": "/absolute/path/to/database_explorer_mcp/.venv/bin/python",
+      "args": ["/absolute/path/to/database_explorer_mcp/server.py"],
+      "cwd": "/absolute/path/to/database_explorer_mcp"
+    }
+  }
+}
+```
+
+On macOS, for example, if you cloned this project into `/Users/your-name/dev/database_explorer_mcp`, use that full path in all three places. Save the file, restart Gemini CLI, and check the connection:
+
+```bash
+gemini mcp list
+```
+
+In Gemini CLI, use `/mcp` to inspect the connected server and its tools. Try asking the model to list the available tables.
+
+### Other MCP clients
+
+For another local client, add an MCP server using the `stdio` transport with these settings:
+
+- **Command:** the absolute path to `.venv/bin/python` in this project
+- **Arguments:** the absolute path to this project's `server.py`
+- **Working directory:** this project's root directory
+
+For example, the command and arguments can be tested from a terminal in the project directory:
+
+```bash
+.venv/bin/python server.py
+```
