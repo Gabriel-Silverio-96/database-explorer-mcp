@@ -66,14 +66,6 @@ Gemini CLI reads MCP server definitions from `~/.gemini/settings.json`. Add a `m
 }
 ```
 
-On macOS, for example, if you cloned this project into `/Users/your-name/dev/database_explorer_mcp`, use that full path in all three places. Save the file, restart Gemini CLI, and check the connection:
-
-```bash
-gemini mcp list
-```
-
-In Gemini CLI, use `/mcp` to inspect the connected server and its tools. Try asking the model to list the available tables.
-
 ### Other MCP clients
 
 For another local client, add an MCP server using the `stdio` transport with these settings:
