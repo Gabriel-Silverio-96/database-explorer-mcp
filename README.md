@@ -1,6 +1,10 @@
-# Database Explorer MCP
+<h1 align="center">Database Explorer MCP</h1>
 
-A Python MCP server for discovering tables and running read-only PostgreSQL queries.
+<p align="center">
+<img width="1000" alt="Image" src="https://github.com/user-attachments/assets/afc98086-2cb6-4e39-89ec-ae63d7800de7" />
+</p>
+
+Explore databases with natural language
 
 ## Requirements
 
